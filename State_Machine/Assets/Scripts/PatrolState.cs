@@ -21,31 +21,50 @@ public class PatrolState : IEnemyState
     public void UpdateState()
     {
         Patrol();
+        Look();
     }
 
     public void OnTriggerEnter(Collider other)
     {
-        
+        //we check what is trigger us. if it's player , alert state
+        if(other.CompareTag("Player"))
+        {
+            ToAlertState();
+        }
     }
 
     public void ToAlertState()
     {
-        
+        enemy.curreState = enemy.alertState;
     }
 
     public void ToChaseState()
     {
-        
+        enemy.curreState = enemy.chaseState;
     }
 
     public void ToPatrolState()
     {
-        
+        //we cannot use this becasue we're already in patrol state
     }
 
+    void Look()
+    {
+        //Dbug ray to visual the ey sight
+        Debug.DrawRay(enemy.eye.position, enemy.eye.forward * enemy.sightRange, Color.green);
+        //raycast
+        RaycastHit hit; //hit variable gets all the info where the ray hits. we call it hit, something to get info.
+        if(Physics.Raycast(enemy.eye.position, enemy.eye.forward, out hit, enemy.sightRange) && hit.collider.CompareTag("Player"))
+        {
+            //We go here only if the ray hits the player
+            //if ray hits player, the enemy sees it and goes nstantly to chase state.
+            enemy.chaseTarget = hit.transform;
+            ToChaseState(); //we want our state to chase state.
+        }
+    }
     void Patrol()
     {
-        enemy.indicator.material.color = Color.yellow;
+        enemy.indicator.material.color = Color.green;
         enemy.navMeshAgent.destination = enemy.waypoints[nextWayPoint].position;
         enemy.navMeshAgent.isStopped = false;
 

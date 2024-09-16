@@ -23,6 +23,8 @@ public class StatePatternEnemy : MonoBehaviour
         navMeshAgent = GetComponent<NavMeshAgent>();
 
         patrolState = new PatrolState(this);
+        alertState = new AlertState(this);
+        chaseState = new ChaseState(this);
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -37,5 +39,11 @@ public class StatePatternEnemy : MonoBehaviour
     {
         curreState.UpdateState(); //we are running the update state in the object that is currect state
         // if the currectstate = patrol state, we run update state fuction in parolstate.cs file
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        //we call current state ontrigger enter
+        curreState.OnTriggerEnter(other);
     }
 }
