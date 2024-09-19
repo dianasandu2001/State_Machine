@@ -32,6 +32,11 @@ public class ChaseState : IEnemyState
     {
         enemy.curreState = enemy.patrolState;
     }
+
+    public void ToTrackingState()
+    {
+        enemy.curreState = enemy.trackingState;
+    }
     void Look()
     {
         //need a vector from enemy eye to player
@@ -51,7 +56,8 @@ public class ChaseState : IEnemyState
         else
         {
             //if player goes around corner, enemy does not see player
-            ToAlertState();
+            enemy.lastKnownPlayerPosition = enemy.chaseTarget.position;
+            ToTrackingState();
         }
     }
     void Chase()

@@ -1,0 +1,101 @@
+using UnityEngine;
+
+public class TurretEnemy : MonoBehaviour
+{
+    public GameObject targetLocation; //TargetArea cylinder
+    public GameObject ammoSpawn; //we spaen ammo this location
+    public GameObject ammo; //ammo prefab
+    public GameObject gunRotator;
+    public float force; // force will be the same but the angle is asjusted
+    public Vector3 gravity;
+
+    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    void Start()
+    {
+        gravity = Physics.gravity;
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
+    public void Shoot()
+    {
+        Debug.Log("Shoot");
+        HitTargetBySpeed(ammoSpawn.transform.position, targetLocation.transform.position, gravity, force);
+    }
+
+    //this method will return array of vector3 of both shooting directions/ angles (wheather it shoots straight of high up)
+    public Vector3[] HitTargetBySpeed(Vector3 startPosition, Vector3 targetPosition, Vector3 gravityBase, float launchSpeed)
+    {
+        //we calculate the direction we shoot
+        Vector3 AtoB = targetPosition - startPosition;
+        Vector3 horizontal = GetHorizontalVector(AtoB, gravityBase, startPosition);
+        Vector3 vertical = GetVerticalVector(AtoB, gravityBase, startPosition);
+
+        float horizantalDistance = horizontal.magnitude;
+        //this gives us negative vertival distance if player if below and positive if above
+        float verticalDistance = vertical.magnitude * Mathf.Sign(Vector3.Dot(vertical, -gravityBase));
+
+        float x2 = horizantalDistance * horizantalDistance;
+        float v2 = launchSpeed * launchSpeed;
+        float v4 = v2 * v2;
+        float gravMag = gravity.magnitude;
+
+        //launchtest
+        //if launchtest is negative, there is no way we can hit the target with current launch force even if we shoot 45 degrees
+        // if launch is positive, we can hit the target and we can calculate the angles/ directions
+        float launchtest = v4 - (gravMag * ((gravMag * x2) + (2 * verticalDistance)));
+        Debug.Log("launchtest" + launchtest);
+
+        Vector3[] launch = new Vector3[2];
+
+        if(launchtest < 0)
+        {
+            Debug.Log("We connot hit the target. lets shoot 2 balls t0 45 degrees, because we want to");
+            launch[0] = (horizontal.normalized * launchSpeed *Mathf.Cos(45.0f * Mathf.Deg2Rad)) - gravityBase.normalized * launchSpeed * Mathf.Sin(45.0f * Mathf.Deg2Rad);
+            launch[1] = (horizontal.normalized * launchSpeed * Mathf.Cos(45.0f * Mathf.Deg2Rad)) - gravityBase.normalized * launchSpeed * Mathf.Sin(45.0f * Mathf.Deg2Rad);
+        }    
+        else
+        {
+            Debug.Log("We canhit hte target, lets calculate the angle");
+            float[] tanAngle = new float[2];
+            tanAngle[0] = (v2 - Mathf.Sqrt(v4 - gravMag * ((gravMag * x2) + (2 * verticalDistance)))) / (gravMag * horizantalDistance);
+            tanAngle[1] = (v2 + Mathf.Sqrt(v4 - gravMag * ((gravMag * x2) + (2 * verticalDistance)))) / (gravMag * horizantalDistance);
+
+            float[] finalAngle = new float[2];
+
+            finalAngle[0] = Mathf.Atan(finalAngle[0]);
+            finalAngle[1] = Mathf.Atan(finalAngle[1]);
+
+            Debug.Log("Then angles we need to shoot are" + finalAngle[0]*Mathf.Rad2Deg + "and" + finalAngle[1] * Mathf.Rad2Deg);
+        }
+        return null;
+    }
+
+    public Vector3 GetHorizontalVector(Vector3 AtoB, Vector3 gravityBase, Vector3 startPosition)
+    {
+        Vector3 output;
+        Vector3 perpendicular = Vector3.Cross(AtoB, gravityBase);
+        perpendicular = Vector3.Cross(gravityBase, perpendicular); // Vector point horizontal direction
+        output = Vector3.Project(AtoB, perpendicular); // This is the horizontal vector
+        Debug.DrawRay(startPosition, output, Color.green, 10f);
+
+        Debug.Log(AtoB);
+        Vector3 hor = AtoB;
+        hor.y = 0;
+        Debug.Log(hor);
+        Debug.Log(output);
+
+        return output;
+    }
+
+    public Vector3 GetVerticalVector(Vector3 AtoB, Vector3 gravityBase, Vector3 startPosition)
+    {
+        Vector3 output;
+        output = Vector3.Project(AtoB, gravityBase);
+        Debug.DrawRay(startPosition, output, Color.red, 10f);
+        return output;
+    }
+}

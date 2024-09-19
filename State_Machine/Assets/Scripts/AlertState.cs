@@ -36,6 +36,11 @@ public class AlertState : IEnemyState
         searchTimer = 0;
         enemy.curreState = enemy.patrolState;
     }
+
+    public void ToTrackingState()
+    {
+        enemy.curreState = enemy.trackingState;
+    }
     void Look()
     {
         //Dbug ray to visual the ey sight
