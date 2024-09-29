@@ -23,7 +23,19 @@ public class TurretEnemy : MonoBehaviour
     public void Shoot()
     {
         Debug.Log("Shoot");
-        HitTargetBySpeed(ammoSpawn.transform.position, targetLocation.transform.position, gravity, force);
+        Vector3[] direction = HitTargetBySpeed(ammoSpawn.transform.position, targetLocation.transform.position, gravity, force);
+
+        //instantiate ball and call it's rigidvody and shoot to direction[0] and direction[1]
+
+        //first ammo
+        GameObject projectile = Instantiate(ammo, ammoSpawn.transform.position, Quaternion.identity);
+        //give ammo force
+        projectile.GetComponent<Rigidbody>().AddRelativeForce(direction[0], ForceMode.Impulse);
+
+        //second ammo
+        GameObject projectile2 = Instantiate(ammo, ammoSpawn.transform.position, Quaternion.identity);
+        //give ammo force
+        projectile.GetComponent<Rigidbody>().AddRelativeForce(direction[1], ForceMode.Impulse);
     }
 
     //this method will return array of vector3 of both shooting directions/ angles (wheather it shoots straight of high up)
@@ -40,7 +52,7 @@ public class TurretEnemy : MonoBehaviour
 
         float x2 = horizantalDistance * horizantalDistance;
         float v2 = launchSpeed * launchSpeed;
-        float v4 = v2 * v2;
+        float v4 = launchSpeed * launchSpeed * launchSpeed * launchSpeed;
         float gravMag = gravity.magnitude;
 
         //launchtest
@@ -53,16 +65,16 @@ public class TurretEnemy : MonoBehaviour
 
         if(launchtest < 0)
         {
-            Debug.Log("We connot hit the target. lets shoot 2 balls t0 45 degrees, because we want to");
-            launch[0] = (horizontal.normalized * launchSpeed *Mathf.Cos(45.0f * Mathf.Deg2Rad)) - gravityBase.normalized * launchSpeed * Mathf.Sin(45.0f * Mathf.Deg2Rad);
+            Debug.Log("We connot hit the target. lets shoot 2 balls to 45 degrees, because we want to");
+            launch[0] = (horizontal.normalized * launchSpeed * Mathf.Cos(45.0f * Mathf.Deg2Rad)) - gravityBase.normalized * launchSpeed * Mathf.Sin(45.0f * Mathf.Deg2Rad);
             launch[1] = (horizontal.normalized * launchSpeed * Mathf.Cos(45.0f * Mathf.Deg2Rad)) - gravityBase.normalized * launchSpeed * Mathf.Sin(45.0f * Mathf.Deg2Rad);
         }    
         else
         {
-            Debug.Log("We canhit hte target, lets calculate the angle");
+            Debug.Log("We can hit hte target, lets calculate the angle");
             float[] tanAngle = new float[2];
-            tanAngle[0] = (v2 - Mathf.Sqrt(v4 - gravMag * ((gravMag * x2) + (2 * verticalDistance)))) / (gravMag * horizantalDistance);
-            tanAngle[1] = (v2 + Mathf.Sqrt(v4 - gravMag * ((gravMag * x2) + (2 * verticalDistance)))) / (gravMag * horizantalDistance);
+            tanAngle[0] = (v2 - Mathf.Sqrt(v4 - gravMag * ((gravMag * x2) + (2 * verticalDistance * v2)))) / (gravMag * horizantalDistance);
+            tanAngle[1] = (v2 + Mathf.Sqrt(v4 - gravMag * ((gravMag * x2) + (2 * verticalDistance * v2)))) / (gravMag * horizantalDistance);
 
             float[] finalAngle = new float[2];
 
@@ -70,8 +82,11 @@ public class TurretEnemy : MonoBehaviour
             finalAngle[1] = Mathf.Atan(finalAngle[1]);
 
             Debug.Log("Then angles we need to shoot are" + finalAngle[0]*Mathf.Rad2Deg + "and" + finalAngle[1] * Mathf.Rad2Deg);
+
+            launch[0] = (horizontal.normalized * launchSpeed * Mathf.Cos(finalAngle[0])) - gravityBase.normalized * launchSpeed * Mathf.Sin(finalAngle[0]);
+            launch[1] = (horizontal.normalized * launchSpeed * Mathf.Cos(finalAngle[1])) - gravityBase.normalized * launchSpeed * Mathf.Sin(finalAngle[1]);
         }
-        return null;
+        return launch;
     }
 
     public Vector3 GetHorizontalVector(Vector3 AtoB, Vector3 gravityBase, Vector3 startPosition)
@@ -82,11 +97,11 @@ public class TurretEnemy : MonoBehaviour
         output = Vector3.Project(AtoB, perpendicular); // This is the horizontal vector
         Debug.DrawRay(startPosition, output, Color.green, 10f);
 
-        Debug.Log(AtoB);
-        Vector3 hor = AtoB;
-        hor.y = 0;
-        Debug.Log(hor);
-        Debug.Log(output);
+        //Debug.Log(AtoB);
+        //Vector3 hor = AtoB;
+        //hor.y = 0;
+        //Debug.Log(hor);SS
+        //Debug.Log(output);
 
         return output;
     }
