@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class TurretEnemy : MonoBehaviour
@@ -20,10 +21,22 @@ public class TurretEnemy : MonoBehaviour
     {
         
     }
+
     public void Shoot()
+    {
+        StartCoroutine(ShootBalls()); 
+    }
+    IEnumerator ShootBalls()
     {
         Debug.Log("Shoot");
         Vector3[] direction = HitTargetBySpeed(ammoSpawn.transform.position, targetLocation.transform.position, gravity, force);
+
+        // Before we shoot first projectile we calculate what angle should the gun rotate.
+        // we wait in the coroutine as long as needed until the gun is rotated to the correct angle.
+        gunRotator.GetComponent<GunRotator>().xAngle = Mathf.Atan(direction[0].y / direction[0].z) *Mathf.Rad2Deg;
+
+        //we stop running the code here until the rotating process is ended. The rotating is ending when the rotating variable turns false.
+        yield return new WaitUntil(() => gunRotator.GetComponent<GunRotator>().rotating == false);
 
         //instantiate ball and call it's rigidvody and shoot to direction[0] and direction[1]
 
@@ -32,6 +45,12 @@ public class TurretEnemy : MonoBehaviour
         //give ammo force
         projectile.GetComponent<Rigidbody>().AddRelativeForce(direction[0], ForceMode.Impulse);
 
+        yield return new WaitForSecondsRealtime(2);
+
+        gunRotator.GetComponent<GunRotator>().xAngle = Mathf.Atan(direction[1].y / direction[1].z) * Mathf.Rad2Deg;
+
+        //we stop running the code here until the rotating process is ended. The rotating is ending when the rotating variable turns false.
+        yield return new WaitUntil(() => gunRotator.GetComponent<GunRotator>().rotating == false);
         //second ammo
         GameObject projectile2 = Instantiate(ammo, ammoSpawn.transform.position, Quaternion.identity);
         //give ammo force
@@ -78,8 +97,8 @@ public class TurretEnemy : MonoBehaviour
 
             float[] finalAngle = new float[2];
 
-            finalAngle[0] = Mathf.Atan(finalAngle[0]);
-            finalAngle[1] = Mathf.Atan(finalAngle[1]);
+            finalAngle[0] = Mathf.Atan(tanAngle[0]);
+            finalAngle[1] = Mathf.Atan(tanAngle[1]);
 
             Debug.Log("Then angles we need to shoot are" + finalAngle[0]*Mathf.Rad2Deg + "and" + finalAngle[1] * Mathf.Rad2Deg);
 
