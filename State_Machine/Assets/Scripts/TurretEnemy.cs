@@ -9,6 +9,7 @@ public class TurretEnemy : MonoBehaviour
     public GameObject gunRotator;
     public float force; // force will be the same but the angle is asjusted
     public Vector3 gravity;
+    private int angleMultiplier;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -31,9 +32,19 @@ public class TurretEnemy : MonoBehaviour
         Debug.Log("Shoot");
         Vector3[] direction = HitTargetBySpeed(ammoSpawn.transform.position, targetLocation.transform.position, gravity, force);
 
+        // this fixes the gun to rotate down when target z is smaller that the enemy z
+        if(gameObject.transform.position.z < targetLocation.transform.position.z)
+        {
+            angleMultiplier = -1;
+        }
+        else
+        {
+            angleMultiplier = 1;
+        }
+
         // Before we shoot first projectile we calculate what angle should the gun rotate.
         // we wait in the coroutine as long as needed until the gun is rotated to the correct angle.
-        gunRotator.GetComponent<GunRotator>().xAngle = Mathf.Atan(direction[0].y / direction[0].z) *Mathf.Rad2Deg;
+        gunRotator.GetComponent<GunRotator>().xAngle = Mathf.Atan(direction[0].y / direction[0].z) *Mathf.Rad2Deg * angleMultiplier;
 
         //we stop running the code here until the rotating process is ended. The rotating is ending when the rotating variable turns false.
         yield return new WaitUntil(() => gunRotator.GetComponent<GunRotator>().rotating == false);
@@ -47,7 +58,7 @@ public class TurretEnemy : MonoBehaviour
 
         yield return new WaitForSecondsRealtime(2);
 
-        gunRotator.GetComponent<GunRotator>().xAngle = Mathf.Atan(direction[1].y / direction[1].z) * Mathf.Rad2Deg;
+        gunRotator.GetComponent<GunRotator>().xAngle = Mathf.Atan(direction[1].y / direction[1].z) * Mathf.Rad2Deg * angleMultiplier;
 
         //we stop running the code here until the rotating process is ended. The rotating is ending when the rotating variable turns false.
         yield return new WaitUntil(() => gunRotator.GetComponent<GunRotator>().rotating == false);
