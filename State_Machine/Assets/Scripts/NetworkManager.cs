@@ -77,4 +77,9 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         // We connected to cloud, let's go to Lobby
         PhotonNetwork.JoinLobby();
     }
+
+    public override void OnJoinedRoom()
+    {
+        PhotonNetwork.Instantiate("PlayerBox", new Vector3(0, 0.5f, 0), Quaternion.identity, 0);
+    }
 }
