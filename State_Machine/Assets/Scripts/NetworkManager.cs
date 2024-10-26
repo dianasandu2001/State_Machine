@@ -10,6 +10,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     private List<RoomInfo> roomsList; //This is a list of rooms we get from the cloud
     private const string roomNamePrefix = "MyRoom"; // e.g. MyRoom929347923 Every room needs a unique name.
     public GUIStyle myStyle;
+    string playerInput = "Please enter your name";
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -41,6 +42,9 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
         if(PhotonNetwork.InRoom == false)
         {
+            //not in room, let player type a name
+            playerInput = GUI.TextField(new Rect(10, 70, 200, 20), playerInput, myStyle);
+
             //if we are not in room, show all avaliable rooms and create room button
             if(GUI.Button(new Rect(200, 100, 250, 100), "Create Room"))
             {
@@ -80,6 +84,8 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     public override void OnJoinedRoom()
     {
-        PhotonNetwork.Instantiate("PlayerBox", new Vector3(0, 0.5f, 0), Quaternion.identity, 0);
+        string[] pldata = new string[1]; //only one slot
+        pldata[0] = playerInput;
+        PhotonNetwork.Instantiate("PlayerBox", new Vector3(0, 0.5f, 0), Quaternion.identity, 0, pldata);
     }
 }

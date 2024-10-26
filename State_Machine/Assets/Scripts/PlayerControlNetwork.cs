@@ -25,9 +25,15 @@ public class PlayerControlNetwork : MonoBehaviourPunCallbacks
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        //when network object is created it gets its data in an array. we get the data from the array and put it to playerNAme variable and also to the name field.
+        object[] obj = photonView.InstantiationData;
+        playerName = obj[0].ToString();
+        nameField.text = playerName;
+
         //if the current game window is controlled by me, turn on the camera
-        if(photonView.IsMine)
+        if (photonView.IsMine)
         {
+            GameObject.Find("BirdViewCamera").gameObject.GetComponent<Camera>().enabled = false;
             myCam.enabled = true;
             Cursor.visible = showCurser;
             Cursor.lockState = showCurser ? CursorLockMode.None : CursorLockMode.Locked;
@@ -37,7 +43,7 @@ public class PlayerControlNetwork : MonoBehaviourPunCallbacks
     // Update is called once per frame
     void Update()
     {
-        //healthField.text = health.ToString();
+        healthField.text = health.ToString();
         if (photonView.IsMine)
         {
             float xMovement = Input.GetAxis("Horizontal") * moveSpeed * Time.deltaTime;
@@ -77,16 +83,19 @@ public class PlayerControlNetwork : MonoBehaviourPunCallbacks
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.CompareTag("Bullet"))
+        Debug.Log("aw");
+        if(collision.gameObject.CompareTag("Bullet"))
         {
-            if (photonView.IsMine)
+            Debug.Log("registered");
+            if(photonView.IsMine)
             {
+                Debug.Log("photon");
                 photonView.RPC("LoseHealth", RpcTarget.AllBuffered);
             }
             Destroy(collision.gameObject);
         }
     }
-
+    [PunRPC]
     public void LoseHealth()
     {
         health -= 10;
@@ -94,7 +103,8 @@ public class PlayerControlNetwork : MonoBehaviourPunCallbacks
         healthField.text = health.ToString();
         if (health < 0 && photonView.IsMine)
         {
-            Destroy(gameObject);
+            //Destroy(gameObject);
+            PhotonNetwork.LeaveRoom();
         }
     }
     private void OnCollisionStay(Collision collision)
